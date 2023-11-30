@@ -3,8 +3,7 @@ import-module ActiveDirectory
 
 #new - function to get paths over 250
 Function filesOverLength ($homeDirectory) {
-    Dir -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Select-Object -Property FullName, @{Name="FullNameLength";Expression={($_.FullName.Length)}} | 
-Where-Object {$_.FullName.length -ge 250}
+    Dir -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Select-Object -Property FullName, @{Name="FullNameLength";Expression={($_.FullName.Length)}} | Where-Object {$_.FullName.length -ge 250}
 }      
 
 #Grab UserName
@@ -26,11 +25,10 @@ New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Servic
 
 # Copy Data Over
 Try {
-
-    #new - get files over length
+    # get files over length
     $filesToSkip = filesOverLength -homeDirectory $homeDirectory
 
-    #new - output skipped files to user
+    # output skipped files to user
     if ($filesToSkip.count -gt 0) {
         Write-Output ("Skipped Files:")
 
@@ -40,7 +38,7 @@ Try {
         }
     }
 
-    # new - copy items excluding the ones in the array we just got
+    # copy items excluding the ones in the array we just got
     Get-ChildItem -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Where-Object {$_.FullName -notin $filesToSkip.FullName} | ForEach-Object {
         $relativePath = $_.FullName.Substring(('\\?\UNC\' + $homeDirectory.substring(2)).Length + 1)
         $destinationPath = Join-Path -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -ChildPath $relativePath
@@ -48,9 +46,8 @@ Try {
     }
 } Catch {
     $_.Exception.Message | Out-File -FilePath "C:\temp\errorLog.txt"  
-
-#Verification through Hash
-} finally {                
+} finally {           
+    # Verification through Hash
     Get-ChildItem -Path ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse|
     Get-FileHash -Algorithm SHA1 | Select-Object -Property Hash | Out-File "C:\temp\HDriveHash.txt"
     Get-Childitem -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -Recurse |
