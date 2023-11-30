@@ -1,7 +1,7 @@
 ﻿Start-Transcript -Path "C:\temp\TransferTranscript.txt"
 import-module ActiveDirectory
 
-#new - function to get paths over 250
+# function to get paths over 250
 Function filesOverLength ($homeDirectory) {
     Dir -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Select-Object -Property FullName, @{Name="FullNameLength";Expression={($_.FullName.Length)}} | Where-Object {$_.FullName.length -ge 250}
 }      
