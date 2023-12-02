@@ -29,10 +29,7 @@ function itemsToBeSkipped ($items) {
 
         if ($isFolder -and $item.Name -eq "forms") {
             $forbiddenItems += $item.FullName
-        } elseif (-not $isFolder -and ($item.Name -match "[$([regex]::Escape($forbiddenChars))]") 
-                    -or $item.Name -like "*.vti*" 
-                    -or $item.Name -like "~*"
-                    -or $item.Name -like "*.one") {
+        } elseif (-not $isFolder -and ($item.Name -match "[$([regex]::Escape($forbiddenChars))]") -or $item.Name -like "*.vti*" -or $item.Name -like "~*" -or $item.Name -like "*.one") {
             $forbiddenItems += $item.FullName
         }
 
