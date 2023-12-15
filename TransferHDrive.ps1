@@ -93,10 +93,12 @@ Try {
     }
 
     # new - make the files to exclude into one array
-    $excludedItems = $filesToSkip + $forbiddenItems
+    $filesToSkip = @($filesToSkip)
+    $forbiddenItems = @($forbiddenItems)
+    $excludedItems = @($filesToSkip + $forbiddenItems)
 
      # new - copy items excluding the ones in the array we just got
-    Get-ChildItem -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Where-Object {$_.FullName -notin $excludedItems.FullName} | ForEach-Object {
+    Get-ChildItem -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Where-Object {$_ -notin $excludedItems} | ForEach-Object {
         $relativePath = $_.FullName.Substring(('\\?\UNC\' + $homeDirectory.substring(2)).Length + 1)
         $destinationPath = Join-Path -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -ChildPath $relativePath
         Copy-Item -LiteralPath $_.FullName -Destination $destinationPath -Recurse -Force
