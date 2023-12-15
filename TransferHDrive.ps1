@@ -92,14 +92,11 @@ Try {
         }
     }
 
-    # new - copy items excluding the ones in the array we just got
-    $filesToCopy = $allFiles | Where-Object { $_.FullName -notin $filesToSkip.FullName -and $_.Name -notin $forbiddenItems }
-
-    # new - it is now in a foreach loop
-    foreach ($file in $filesToCopy) {
-        $relativePath = $file.FullName.Substring(('\\?\UNC\' + $homeDirectory.substring(2)).Length + 1)
+ # new - copy items excluding the ones in the array we just got
+    Get-ChildItem -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Where-Object {$_.FullName -notin $filesToSkip.FullName} | ForEach-Object {
+        $relativePath = $_.FullName.Substring(('\\?\UNC\' + $homeDirectory.substring(2)).Length + 1)
         $destinationPath = Join-Path -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -ChildPath $relativePath
-        Copy-Item -LiteralPath $file.FullName -Destination $destinationPath -Recurse -Force
+        Copy-Item -LiteralPath $_.FullName -Destination $destinationPath -Recurse -Force
     }
 } Catch {
     $_.Exception.Message | Out-File -FilePath "C:\temp\errorLog.txt"  
