@@ -1,5 +1,5 @@
 ﻿Start-Transcript -Path "C:\temp\TransferTranscript.txt"
-$FunctionFromGitHub = Invoke-WebRequest https://github.com/raggingsoldier/Mitigation/blob/main/annoyingFunction
+$FunctionFromGitHub = Invoke-WebRequest https://github.com/raggingsoldier/Mitigation/blob/main/annoying%20function.ps1
 Invoke-Expression $($FunctionFromGitHub.Content)
 import-module ActiveDirectory
 
