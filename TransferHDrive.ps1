@@ -3,11 +3,11 @@ import-module ActiveDirectory
 
 #new - function to get paths over 250
 Function filesOverLength ($homeDirectory) {
-    Dir -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Select-Object -Property FullName, @{Name="FullNameLength";Expression={($_.FullName.Length)}} | 
-Where-Object {$_.FullName.length -ge 250}
+    Get-ChildItem -LiteralPath $homeDirectory -Recurse | 
+Where-Object {$_.FullName.length -ge 250} 
 }      
 
-#Grab UserName
+#Grab UserNamet
 [string]$domainUser = Get-WmiObject -class Win32_computersystem | Select -ExpandProperty username
 $user = $domainUser.split('\')[1]
 
@@ -23,35 +23,16 @@ $homeDirectory = $homeDirectory.split('}')[0]
 
 #Create Folder in One Drive that will hold H Drive Contents
 New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -Force
-
-# Copy Data Over
+[array]$filesToSkip = filesOverLength -homeDirectory $homeDirectory
+# Copy Data Over , 
 Try {
-
-    #new - get files over length
-    $filesToSkip = filesOverLength -homeDirectory $homeDirectory
-
-    #new - output skipped files to user
-    if ($filesToSkip.count -gt 0) {
-        Write-Output ("Skipped Files:")
-
-        # Iterate through the list and output each object
-        $filesToSkip | ForEach-Object {
-            Write-Output $_.FullName
-        }
-    }
-
-    # new - copy items excluding the ones in the array we just got
-    Get-ChildItem -LiteralPath ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse | Where-Object {$_.FullName -notin $filesToSkip.FullName} | ForEach-Object {
-        $relativePath = $_.FullName.Substring(('\\?\UNC\' + $homeDirectory.substring(2)).Length + 1)
-        $destinationPath = Join-Path -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -ChildPath $relativePath
-        Copy-Item -LiteralPath $_.FullName -Destination $destinationPath -Recurse -Force
-    }
+    RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir 
 } Catch {
     $_.Exception.Message | Out-File -FilePath "C:\temp\errorLog.txt"  
 
 #Verification through Hash
 } finally {                
-    Get-ChildItem -Path ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse|
+    Get-ChildItem -Path ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse -Exclude *.one, *.onetoc2, *.onepkg |
     Get-FileHash -Algorithm SHA1 | Select-Object -Property Hash | Out-File "C:\temp\HDriveHash.txt"
     Get-Childitem -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -Recurse |
     Get-FileHash -Algorithm SHA1 | Select-Object -Property Hash | Out-File "C:\temp\OneDriveHash.txt"
@@ -75,4 +56,4 @@ Try {
          Stop-Transcript
     }
 }
-            
+        
