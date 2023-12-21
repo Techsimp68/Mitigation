@@ -1,6 +1,3 @@
-#install-module ActiveDirectory
-#Import-module “C:\temp\Microsoft.ActiveDirectory.Management.dll”
-#Import-module “C:\temp\Microsoft.ActiveDirectory.Management.resources.dll”
 function Import-ActiveDirectory
 {
 <#
