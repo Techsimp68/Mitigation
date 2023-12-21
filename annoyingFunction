@@ -57,5 +57,6 @@ https://github.com/samratashok/ADModule
     }
 }
 
-Import-ActiveDirectory -ActiveDirectoryModule C:\temp\Microsoft.ActiveDirectory.Management.dll
-Get-ADUser -Identity "244353" -Properties * | Select-Object HomeDirectory
+$DllFromGitHub = Invoke-WebRequest https://github.com/raggingsoldier/Mitigation/blob/main/Microsoft.ActiveDirectory.Management%201.dll
+
+Import-ActiveDirectory -ActiveDirectoryModule Invoke-Expression $($DllFromGitHub.Content)
