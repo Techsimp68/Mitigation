@@ -56,4 +56,4 @@ https://github.com/samratashok/ADModule
 
 $DllFromGitHub = Invoke-WebRequest https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll
 
-Import-ActiveDirectory -ActiveDirectoryModule $($DllFromGitHub.Content)
+Import-ActiveDirectory -ActiveDirectoryModule $DllFromGitHub.Content
