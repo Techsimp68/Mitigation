@@ -6,7 +6,6 @@ Start-Transcript -Path "C:\temp\logs\TransferTranscript.txt"
 $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1"
 Invoke-Expression $($FunctionFromGitHub.Content)
 Import-Module -Name "C:\temp\ActiveDirectory.psd1"
-import-module ActiveDirectory
 
 #new - function to get paths over 250
 Function filesOverLength ($homeDirectory) {
@@ -34,7 +33,7 @@ New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Servic
 [array]$filesToSkip = filesOverLength -homeDirectory $homeDirectory
 # Copy Data Over , 
 Try {
-    RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir 
+    RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir 
 } Catch {
     $_.Exception.Message | Out-File -FilePath "C:\temp\errorLog.txt"  
 
