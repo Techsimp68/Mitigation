@@ -40,9 +40,9 @@ Try {
 #Verification through Hash
 } finally {                
     Get-ChildItem -Path ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse -Exclude *.one, *.onetoc2, *.onepkg |
-    Get-FileHash -Algorithm SHA1 | Select-Object -Property Hash | Out-File "C:\temp\HDriveHash.txt"
+    Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\HDriveHash.txt"
     Get-Childitem -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -Recurse |
-    Get-FileHash -Algorithm SHA1 | Select-Object -Property Hash | Out-File "C:\temp\OneDriveHash.txt"
+    Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\OneDriveHash.txt"
 
     $objects =@{
         ReferenceObject = (Get-Content -Path "C:\temp\HDriveHash.txt")
