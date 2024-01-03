@@ -1,4 +1,7 @@
-﻿Start-Transcript -Path "C:\temp\TransferTranscript.txt"
+New-Item -ItemType Directory "C:\temp" -Force
+New-Item -ItemType Directory "C:\temp\logs" -Force
+invoke-WebRequest 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\logs"
+Start-Transcript -Path "C:\temp\logs\TransferTranscript.txt"
 $FunctionFromGitHub = Invoke-WebRequest -uri https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1
 Invoke-Expression $($FunctionFromGitHub.Content)
 import-module ActiveDirectory
