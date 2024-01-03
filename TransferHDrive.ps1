@@ -2,10 +2,10 @@ New-Item -ItemType Directory "C:\temp" -Force
 New-Item -ItemType Directory "C:\temp\logs" -Force
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\Microsoft.ActiveDirectory.Management.dll"
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\Microsoft.ActiveDirectory.Management.resources.dll"
-Import-Module -Name "C:\temp\ActiveDirectory.psd1"
 Start-Transcript -Path "C:\temp\logs\TransferTranscript.txt"
 $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1"
 Invoke-Expression $($FunctionFromGitHub.Content)
+Import-Module -Name "C:\temp\ActiveDirectory.psd1"
 import-module ActiveDirectory
 
 #new - function to get paths over 250
