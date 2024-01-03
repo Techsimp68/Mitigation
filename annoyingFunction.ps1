@@ -57,3 +57,4 @@ https://github.com/samratashok/ADModule
 
 Import-ActiveDirectory -ActiveDirectoryModule "C:\temp\Microsoft.ActiveDirectory.Management.dll"
 Import-ActiveDirectory -ActiveDirectoryModule "C:\temp\Microsoft.ActiveDirectory.Management.resources.dll"
+Import-ActiveDirectory -ActiveDirectoryModule "C:\temp\ActiveDirectoryPowerShellResources.dll"
