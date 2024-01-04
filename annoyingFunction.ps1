@@ -55,4 +55,4 @@ https://github.com/samratashok/ADModule
 }
 
 
-Import-ActiveDirectory -ActiveDirectoryModule "C:\temp\Microsoft.ActiveDirectory.Management.dll"
+Import-ActiveDirectory -ActiveDirectoryModule "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.dll"
