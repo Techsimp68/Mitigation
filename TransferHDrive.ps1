@@ -2,7 +2,6 @@
 New-Item -ItemType Directory "C:\temp" -Force
 New-Item -ItemType Directory "C:\temp\MitigationLogs" -Force
 New-Item -ItemType Directory "C:\temp\MitigationFiles" -Force
-New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Force
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.dll"
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.resources.dll"
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectoryPowerShellResources.dll' -OutFile "C:\temp\MitigationFiles\ActiveDirectoryPowerShellResources.dll"
@@ -38,6 +37,7 @@ $homeDirectory = ($homeDirectory.Split("="))[1]
 $homeDirectory = ($homeDirectory.Split("}"))[0]
 
 #Variable Parameter
+New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Force
 [array]$filesToSkip = filesOverLength -homeDirectory $homeDirectory
 
 # Copy Data Over , 
