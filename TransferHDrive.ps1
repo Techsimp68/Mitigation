@@ -2,6 +2,11 @@ New-Item -ItemType Directory "C:\temp" -Force
 New-Item -ItemType Directory "C:\temp\logs" -Force
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\Microsoft.ActiveDirectory.Management.dll"
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\Microsoft.ActiveDirectory.Management.resources.dll"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectoryPowerShellResources.dll' -OutFile "C:\temp\ActiveDirectoryPowerShellResources.dll"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.psd1' -OutFile "C:\temp\ActiveDirectory.psd1"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Types.ps1xml' -OutFile "C:\temp\ActiveDirectory.Types.ps1xml"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Format.ps1xml' -OutFile "C:\temp\ActiveDirectory.Format.ps1xml"
+
 Start-Transcript -Path "C:\temp\logs\TransferTranscript.txt"
 $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1"
 Invoke-Expression $($FunctionFromGitHub.Content)
