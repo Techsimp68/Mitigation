@@ -1,24 +1,28 @@
+#Creating Folders/Installing Needed Files
 New-Item -ItemType Directory "C:\temp" -Force
-New-Item -ItemType Directory "C:\temp\logs" -Force
-invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\Microsoft.ActiveDirectory.Management.dll"
-invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\Microsoft.ActiveDirectory.Management.resources.dll"
-invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectoryPowerShellResources.dll' -OutFile "C:\temp\ActiveDirectoryPowerShellResources.dll"
-invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.psd1' -OutFile "C:\temp\ActiveDirectory.psd1"
-invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Types.ps1xml' -OutFile "C:\temp\ActiveDirectory.Types.ps1xml"
-invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Format.ps1xml' -OutFile "C:\temp\ActiveDirectory.Format.ps1xml"
+New-Item -ItemType Directory "C:\temp\MitigationLogs" -Force
+New-Item -ItemType Directory "C:\temp\MitigationFiles" -Force
+New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Force
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.dll"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.resources.dll"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectoryPowerShellResources.dll' -OutFile "C:\temp\MitigationFiles\ActiveDirectoryPowerShellResources.dll"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.psd1' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.psd1"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Types.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Types.ps1xml"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Format.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Format.ps1xml"
 
-Start-Transcript -Path "C:\temp\logs\TransferTranscript.txt"
+#Installing/Importing AD Module (Note: Import-Module will throw error if script is ran a 2nd time, safe to ignore)
+Start-Transcript -Path "C:\temp\MitigationLogs\TransferTranscript.txt"
 $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1"
 Invoke-Expression $($FunctionFromGitHub.Content)
-Import-Module -Name "C:\temp\ActiveDirectory.psd1"
+Import-Module -Name "C:\temp\MitigationFiles\ActiveDirectory.psd1"
 
-#new - function to get paths over 250
+#Function to get paths over 250 characters
 Function filesOverLength ($homeDirectory) {
     Get-ChildItem -LiteralPath $homeDirectory -Recurse | 
 Where-Object {$_.FullName.length -ge 250} 
 }      
 
-#Grab UserNamet
+#Grab UserName
 [string]$domainUser = Get-WmiObject -class Win32_computersystem | Select -ExpandProperty username
 $user = $domainUser.split('\')[1]
 
@@ -33,38 +37,35 @@ $homeDirectory = "Microsoft.Powershell.Core/filesystem::$homeDirectory"
 $homeDirectory = ($homeDirectory.Split("="))[1]
 $homeDirectory = ($homeDirectory.Split("}"))[0]
 
-#Create Folder in One Drive that will hold H Drive Contents
-New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -Force
+#Variable Parameter
 [array]$filesToSkip = filesOverLength -homeDirectory $homeDirectory
+
 # Copy Data Over , 
 Try {
     RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir 
 } Catch {
-    $_.Exception.Message | Out-File -FilePath "C:\temp\errorLog.txt"  
+    $_.Exception.Message | Out-File -FilePath "C:\temp\MitigationLogs\errorLog.txt"  
 
 #Verification through Hash
 } finally {                
     Get-ChildItem -Path ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse -Exclude *.one, *.onetoc2, *.onepkg |
     Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\HDriveHash.txt"
-    Get-Childitem -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive" -Recurse |
+    Get-Childitem -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Recurse |
     Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\OneDriveHash.txt"
 
     $objects =@{
-        ReferenceObject = (Get-Content -Path "C:\temp\HDriveHash.txt")
-        DifferenceObject = (Get-Content -Path "C:\temp\OneDriveHash.txt")
+        ReferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\HDriveHash.txt")
+        DifferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\OneDriveHash.txt")
     }
 
     $comparisonResult = Compare-Object @objects
       
     if ($null -eq $comparisonResult) {
         Write-Output("Success the hashes are the Same!")
-
-        #Set-ItemProperty -Path "HKU:\$strSID\Software\Microsoft\OneDrive\Accounts\Business1" -Name "Documents" -Value 1
-        #Set-ItemProperty -Path "HKU:\$strSID\Software\Microsoft\OneDrive\Accounts\Business1" -Name "Pictures" -Value 1
         Stop-Transcript
     } else {
          Write-Output("Failed the hashes dont match need human interaction!")
-         $Error > "C:\temp\errors.txt"
+         $Error > "C:\temp\MitigationLogs\HashErrors.txt"
          Stop-Transcript
     }
 }
