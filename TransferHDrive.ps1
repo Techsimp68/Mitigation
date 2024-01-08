@@ -42,7 +42,7 @@ New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Servic
 
 # Copy Data Over , 
 Try {
-    RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir 
+    RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir /XF desktop.ini
 } Catch {
     $_.Exception.Message | Out-File -FilePath "C:\temp\MitigationLogs\errorLog.txt"  
 
