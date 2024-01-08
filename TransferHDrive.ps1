@@ -18,7 +18,7 @@ Import-Module -Name "C:\temp\MitigationFiles\ActiveDirectory.psd1"
 #Function to get paths over 250 characters
 Function filesOverLength ($homeDirectory) {
     Get-ChildItem -LiteralPath $homeDirectory -Recurse | 
-Where-Object {$_.FullName.length -ge 250} 
+    Where-Object {$_.FullName.length -ge 250} 
 }      
 
 #Grab UserName
