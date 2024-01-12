@@ -1,1 +1,134 @@
+#Loading Windows Forms to use WinForm Objects
+Add-Type -assembly System.Windows.Forms
 
+#Main form created
+$main_form = New-Object System.Windows.Forms.Form
+
+#Basic Elements
+$main_form.Text ='HomeSmart Migration'
+$main_form.Width = 600
+$main_form.Height = 400
+$main_form.AutoSize = $true
+$main_form.StartPosition = 'CenterScreen'
+
+#Text  
+$Label = New-Object System.Windows.Forms.Label
+$Label.Text = "Hello,This application will move all files/folders located in your H Drive into your One Drive."
+$Label.Location = New-Object System.Drawing.Point(40,60)
+$Label.AutoSize = $true
+$main_form.Controls.Add($Label)
+
+#Progress Bar
+$progressBar = New-Object System.Windows.Forms.ProgressBar
+$progressBar.Location = New-Object System.Drawing.Size(130,150)
+$progressBar.Size = New-Object System.Drawing.Size(300,23)
+$progressBar.Text = "Continue"
+$progressBar.DataBindings.DefaultDataSourceUpdateMode = 0
+$progressBar.Step = 1
+$timer = New-Object System.Windows.Forms.Timer
+$main_form.Controls.Add($progressBar)
+$timer.Interval = 100
+$timer.add_tick($timer_OnTick)
+$timer.start()
+$progressBar.Value = 0
+
+#Button To Run Script
+$Button = New-Object System.Windows.Forms.Button
+$Button.Location = New-Object System.Drawing.Size(225,300)
+$Button.Size = New-Object System.Drawing.Size(120,23)
+$Button.Text = "Continue"
+$main_form.Controls.Add($Button)
+
+Function disableClick 
+{
+    Write-Host 'Clicked'
+    $Button.Enabled = $false
+    Start-Sleep -Seconds 2
+}
+
+$Button.Add_Click( 
+
+{
+    disableClick
+
+    #Creating Folders/Installing Needed Files
+    New-Item -ItemType Directory "C:\temp" -Force
+    New-Item -ItemType Directory "C:\temp\MitigationLogs" -Force
+    New-Item -ItemType Directory "C:\temp\MitigationFiles" -Force
+    invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.dll"
+    invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.resources.dll"
+    invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectoryPowerShellResources.dll' -OutFile "C:\temp\MitigationFiles\ActiveDirectoryPowerShellResources.dll"
+    invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.psd1' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.psd1"
+    invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Types.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Types.ps1xml"
+    invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Format.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Format.ps1xml"
+    $progressBar.Value = 5
+
+    #Installing/Importing AD Module (Note: Import-Module will throw error if script is ran a 2nd time, safe to ignore)
+    Start-Transcript -Path "C:\temp\MitigationLogs\TransferTranscript.txt"
+    $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1"
+    Invoke-Expression $($FunctionFromGitHub.Content)
+    Import-Module -Name "C:\temp\MitigationFiles\ActiveDirectory.psd1"
+
+    #Function to get paths over 250 characters
+    Function filesOverLength ($homeDirectory) {
+        Get-ChildItem -LiteralPath $homeDirectory -Recurse | 
+    Where-Object {$_.FullName.length -ge 250} 
+    }      
+
+    #Grab UserName
+    [string]$domainUser = Get-WmiObject -class Win32_computersystem | Select -ExpandProperty username
+    $user = $domainUser.split('\')[1]
+
+    #Grab SID from Regedit
+    $objUser = New-Object System.Security.Principal.NTAccount("$user")
+    $strSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+    $strSID.Value
+
+    #Grab H Drive from AD
+    $homeDirectory = Get-ADUser -Identity $user -Properties * | Select-Object HomeDirectory
+    $homeDirectory = "Microsoft.Powershell.Core/filesystem::$homeDirectory"
+    $homeDirectory = ($homeDirectory.Split("="))[1]
+    $homeDirectory = ($homeDirectory.Split("}"))[0]
+    $progressBar.Value = 30
+
+    #Variable Parameter
+    New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Force
+    [array]$filesToSkip = filesOverLength -homeDirectory $homeDirectory
+
+    # Copy Data Over , 
+    Try {
+        RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir /XF "desktop.ini"
+        $progressBar.Value = 85
+    } Catch {
+        $_.Exception.Message | Out-File -FilePath "C:\temp\MitigationLogs\errorLog.txt"  
+
+    #Verification through Hash
+    } finally {                
+        Get-ChildItem -Path ('\\?\UNC\' + $homeDirectory.substring(2)) -Recurse -Exclude *.one, *.onetoc2, *.onepkg |
+        Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\MitigationLogs\HDriveHash.txt"
+        Get-Childitem -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Recurse |
+        Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\MitigationLogs\OneDriveHash.txt"
+
+        $objects =@{
+            ReferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\HDriveHash.txt")
+            DifferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\OneDriveHash.txt")
+        }
+
+        $comparisonResult = Compare-Object @objects
+      
+        if ($null -eq $comparisonResult) {
+            Write-Output("Success the hashes are the Same!")
+            Stop-Transcript
+            $progressBar.Value = 100
+ 
+        } else {
+            Write-Output("Failed the hashes dont match need human interaction!")
+            $Error > "C:\temp\MitigationLogs\HashErrors.txt"
+            Stop-Transcript
+            $progressBar.Value = 100
+        }
+    }       
+})      
+
+
+$main_form.ShowDialog()| Out-Null
