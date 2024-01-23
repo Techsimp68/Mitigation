@@ -182,6 +182,7 @@ $Script.Add_Click(
             if($null -eq $transferVerification){
                 [Void] [System.Windows.MessageBox]::Show("No Data has been moved over. A critical error has occured. Please contact the Help Desk.", "Script Failure","OK","Error")
                 $main_form.close()
+                exit
             }else{
                 $objects =@{
                     ReferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\HDriveHash.txt")
