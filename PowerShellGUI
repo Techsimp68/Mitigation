@@ -34,7 +34,7 @@ Add-Type -assembly System.Windows.Forms
 $main_form = New-Object System.Windows.Forms.Form
 
 #Basic Elements
-$main_form.Text ='HomeSmart Migration'
+$main_form.Text ='H -> OneDrive Migration'
 $main_form.Width = 620
 $main_form.Height = 475
 $main_form.AutoSize = $false
@@ -104,7 +104,7 @@ $Script.Add_Click(
         $timer.start()
         $progressBar.Value = 0
 
-        #StatusBar/New Paage
+        #StatusBar/New Page
         $Status = New-Object System.Windows.Forms.Label
         $Status.Text = "Initializing . . ."
         $Status.Location = New-Object System.Drawing.Point(105,210)
