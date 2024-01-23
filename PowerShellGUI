@@ -61,7 +61,7 @@ $Label.Text = "                             The following application will trans
 $Label.Location = New-Object System.Drawing.Point(15,60)
 $Label.Font = New-Object System.Drawing.Font("Verdana", 10, [System.Drawing.FontStyle]::Bold)
 $Label.BackColor= [System.Drawing.Color]::Transparent
-$Label.ForeColor= [System.Drawing.Color]::Black
+$Label.ForeColor= [System.Drawing.Color]::White
 $Label.AutoSize = $true
 $main_form.Controls.Add($Label)
 
@@ -110,7 +110,7 @@ $Script.Add_Click(
         $Status.Location = New-Object System.Drawing.Point(105,210)
         $Status.Font = New-Object System.Drawing.Font("Verdana", 8, [System.Drawing.FontStyle]::Bold)
         $Status.BackColor= [System.Drawing.Color]::Transparent
-        $Status.ForeColor= [System.Drawing.Color]::DimGray
+        $Status.ForeColor= [System.Drawing.Color]::White
         $Status.AutoSize = $true
         $Label.text = " "
         $main_form.Controls.Add($status)
@@ -205,12 +205,13 @@ $Script.Add_Click(
             }
         }
         if($null -eq $filesToSkip){
-            [void] [System.Windows.MessageBox]::Show("Transfer has been completed. Please verify all items have transfered.", "Move Complete", "OK", "Information")
-            exit
+            [void] [System.Windows.MessageBox]::Show("Transfer has been completed. Please verify all items have transfered to the following folder: 
+            C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername .", "Move Complete", "OK", "Information")
+            
         }else{
             [Void] [System.Windows.MessageBox]::Show("Transfer has been completed;however, the following files/folders have not been moved: $filesToSkip. 
             Please rename the folders/file names to a length shorter than 200 characters and launch the application again.", "Warning", "OK", "Warning")
-            exit
+            
         }
     }       
 })      
