@@ -1,22 +1,48 @@
+#Hide Console
+Add-Type -Name Window -Namespace Console -MemberDefinition '
+[DllImport("Kernel32.dll")]
+public static extern IntPtr GetConsoleWindow();
+
+[DllImport("user32.dll")]
+public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+'
+
+function ShowConsole
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    [Console.Window]::ShowWindow($consolePtr, 5) #5 show
+}
+
+function HideConsole
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    [Console.Window]::ShowWindow($consolePtr, 0) #0 hide
+}
+
+HideConsole
+
 #download needed imgs
 New-Item -ItemType Directory "C:\temp\MitigationFiles" -Force
 invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/XcelLogo.jpg' -OutFile "C:\temp\MitigationFiles\XcelLogo.jpg"
+Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/icon.ico' -OutFile "C:\temp\MitigationFiles\icon.ico"
 
 #Loading Windows Forms to use WinForm Objects
 Add-Type -assembly System.Windows.Forms
+
 
 #Main form created
 $main_form = New-Object System.Windows.Forms.Form
 
 #Basic Elements
 $main_form.Text ='HomeSmart Migration'
-$main_form.Width = 600
-$main_form.Height = 450
-$main_form.AutoSize = $true
+$main_form.Width = 620
+$main_form.Height = 475
+$main_form.AutoSize = $false
 $main_form.StartPosition = 'CenterScreen'
 
 #Icon & Background
-
+$objIcon = New-Object system.drawing.icon ("c:\temp\MitigationFiles\icon.ico")
+$main_form.Icon = $objIcon
 $Image = [system.drawing.image]::FromFile("c:\temp\MitigationFiles\XcelLogo.jpg")
 $main_form.BackgroundImage = $Image
 $main_form.BackgroundImageLayout = "Stretch"
@@ -25,20 +51,24 @@ $main_form.MaximizeBox = $false
 
 #Text  
 $Label = New-Object System.Windows.Forms.Label
-$Label.Text = "              The following application will transfer folders/files from your H Drive to your OneDrive. 
-The process will take 5-15 minutes to complete, please allow the process to complete before resuming work.
-                                                                       Click Run to start."
-$Label.Location = New-Object System.Drawing.Point(30,60)
-$Label.Font = New-Object System.Drawing.Font("Microsoft Sans Serif", 10, [System.Drawing.FontStyle]::Bold)
+$Label.Text = "                             The following application will transfer 
+                    folders/files from your H Drive to your OneDrive.
+        The process will take 5-15 minutes to complete, please allow it 
+                               complete before resuming work.
+
+
+                                             Click Run to start."
+$Label.Location = New-Object System.Drawing.Point(15,60)
+$Label.Font = New-Object System.Drawing.Font("Verdana", 10, [System.Drawing.FontStyle]::Bold)
 $Label.BackColor= [System.Drawing.Color]::Transparent
-$Label.ForeColor= [System.Drawing.Color]::MidnightBlue
+$Label.ForeColor= [System.Drawing.Color]::Black
 $Label.AutoSize = $true
 $main_form.Controls.Add($Label)
 
 
 #Button To Run Script
 $Script = New-Object System.Windows.Forms.Button
-$Script.Location = New-Object System.Drawing.Size(280,350)
+$Script.Location = New-Object System.Drawing.Size(230,350)
 $Script.Size = New-Object System.Drawing.Size(120,23)
 $Script.Text = "Run"
 $main_form.Controls.Add($Script)
@@ -59,11 +89,12 @@ $Script.Add_Click(
         return
     }else{
        
-       #Progress Bar
+        #Progress Bar
         $progressBar = New-Object System.Windows.Forms.ProgressBar
-        $progressBar.Location = New-Object System.Drawing.Size(165,210)
+        $progressBar.Location = New-Object System.Drawing.Size(105,180)
         $progressBar.Size = New-Object System.Drawing.Size(375,25)
         $progressBar.Text = "Continue"
+        $progressBar.ForeColor = "MediumBlue"
         $progressBar.DataBindings.DefaultDataSourceUpdateMode = 0
         $progressBar.Step = 1
         $timer = New-Object System.Windows.Forms.Timer
@@ -72,6 +103,17 @@ $Script.Add_Click(
         $timer.add_tick($timer_OnTick)
         $timer.start()
         $progressBar.Value = 0
+
+        #StatusBar/New Paage
+        $Status = New-Object System.Windows.Forms.Label
+        $Status.Text = "Initializing . . ."
+        $Status.Location = New-Object System.Drawing.Point(105,210)
+        $Status.Font = New-Object System.Drawing.Font("Verdana", 8, [System.Drawing.FontStyle]::Bold)
+        $Status.BackColor= [System.Drawing.Color]::Transparent
+        $Status.ForeColor= [System.Drawing.Color]::DimGray
+        $Status.AutoSize = $true
+        $Label.text = " "
+        $main_form.Controls.Add($status)
 
     
         disableClick
@@ -85,12 +127,13 @@ $Script.Add_Click(
         invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Types.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Types.ps1xml"
         invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Format.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Format.ps1xml"
         $progressBar.Value = 5
+        $Status.Text = "Retrieving User Data . . ."
 
         #Installing/Importing AD Module (Note: Import-Module will throw error if script is ran a 2nd time, safe to ignore)
         Start-Transcript -Path "C:\temp\MitigationLogs\TransferTranscript.txt"
         $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1"
         Invoke-Expression $($FunctionFromGitHub.Content)
-            Import-Module -Name "C:\temp\MitigationFiles\ActiveDirectory.psd1"
+        Import-Module -Name "C:\temp\MitigationFiles\ActiveDirectory.psd1"
 
         #Function to get paths over 250 characters
         Function filesOverLength ($homeDirectory) {
@@ -113,6 +156,7 @@ $Script.Add_Click(
         $homeDirectory = ($homeDirectory.Split("="))[1]
         $homeDirectory = ($homeDirectory.Split("}"))[0]
         $progressBar.Value = 30
+        $status.Text = "Transfering Data . . ."
 
         #Variable Parameter
         New-Item -ItemType Directory -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Force
@@ -122,6 +166,7 @@ $Script.Add_Click(
         Try {
             RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /XD $filestoSkip /XD "OneNote NoteBooks" /XF $filesToSkip /Mir /XF "desktop.ini"
             $progressBar.Value = 85
+            $Status.Text = "Checking Hash . . ."
         } Catch {
             $_.Exception.Message | Out-File -FilePath "C:\temp\MitigationLogs\errorLog.txt"  
 
@@ -131,31 +176,41 @@ $Script.Add_Click(
             Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\MitigationLogs\HDriveHash.txt"
             Get-Childitem -Path "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" -Recurse |
             Get-FileHash -Algorithm SHA256 | Select-Object -Property Hash | Out-File "C:\temp\MitigationLogs\OneDriveHash.txt"
+            $transferVerification = (Get-Content -Path "C:\temp\MitigationLogs\OneDriveHash.txt")
 
-            $objects =@{
-                ReferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\HDriveHash.txt")
-                DifferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\OneDriveHash.txt")
-            }
+            if($null -eq $transferVerification){
+                [Void] [System.Windows.MessageBox]::Show("No Data has been moved over. A critical error has occured. Please contact the Help Desk.", "Script Failure","OK","Error")
+                exit
+            }else{
+                $objects =@{
+                    ReferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\HDriveHash.txt")
+                    DifferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\OneDriveHash.txt")
+                }
 
-            $comparisonResult = Compare-Object @objects
+                $comparisonResult = Compare-Object @objects
       
-            if ($null -eq $comparisonResult) {
-                Write-Output("Success the hashes are the Same!")
-                Stop-Transcript
-                $progressBar.Value = 100
+                if ($null -eq $comparisonResult) {
+                    Write-Output("Success the hashes are the Same!")
+                    Stop-Transcript
+                    $progressBar.Value = 100
+                    $Status.Text = "Completed!"
  
-            } else {
-                Write-Output("Failed the hashes dont match need human interaction!")
-                $Error > "C:\temp\MitigationLogs\HashErrors.txt"
-                Stop-Transcript
-                $progressBar.Value = 100
+                } else {
+                    Write-Output("Failed the hashes dont match need human interaction!")
+                    $Error > "C:\temp\MitigationLogs\HashErrors.txt"
+                    Stop-Transcript
+                    $progressBar.Value = 100
+                    $Status.Text = "Completed!"
+                }
             }
         }
         if($null -eq $filesToSkip){
             [void] [System.Windows.MessageBox]::Show("Transfer has been completed. Please verify all items have transfered.", "Move Complete", "OK", "Information")
+            exit
         }else{
             [Void] [System.Windows.MessageBox]::Show("Transfer has been completed;however, the following files/folders have not been moved: $filesToSkip. 
-       Please rename the folders/file names to a length shorter than 200 characters and click run again.", "Warning", "OK", "Error")
+            Please rename the folders/file names to a length shorter than 200 characters and launch the application again.", "Warning", "OK", "Warning")
+            exit
         }
     }       
 })      
