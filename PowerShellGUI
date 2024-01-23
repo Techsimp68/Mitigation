@@ -50,8 +50,7 @@ $Script.Add_Click(
     
     if($answer -eq "No"){
     return
-    }else{
-       
+    }else
        #Progress Bar
         $progressBar = New-Object System.Windows.Forms.ProgressBar
         $progressBar.Location = New-Object System.Drawing.Size(165,210)
