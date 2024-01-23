@@ -28,6 +28,7 @@ Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/
 
 #Loading Windows Forms to use WinForm Objects
 Add-Type -assembly System.Windows.Forms
+Add-Type -AssemblyName PresentationFramework
 
 
 #Main form created
@@ -82,7 +83,7 @@ Function disableClick
 $Script.Add_Click( 
 
 {
-    #confimation user is ready
+    #confimation user is read
     $answer = [System.Windows.MessageBox]::Show( "Are you sure you want to continue? ", "Confirmation", "YesNo", "Warning" )
     
     if($answer -eq "No"){
@@ -180,7 +181,7 @@ $Script.Add_Click(
 
             if($null -eq $transferVerification){
                 [Void] [System.Windows.MessageBox]::Show("No Data has been moved over. A critical error has occured. Please contact the Help Desk.", "Script Failure","OK","Error")
-                exit
+                $main_form.close()
             }else{
                 $objects =@{
                     ReferenceObject = (Get-Content -Path "C:\temp\MitigationLogs\HDriveHash.txt")
@@ -216,7 +217,8 @@ $filesToSkip.
 Please rename the folders/file names to a length shorter than 200 characters and launch the application again.", "Warning", "OK", "Warning")
             
         }
-    }       
+    }
+$main_form.close()     
 })      
 
 
