@@ -23,8 +23,8 @@ HideConsole
 
 #download needed imgs
 New-Item -ItemType Directory "C:\temp\MitigationFiles" -Force
-invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/XcelLogo.jpg' -OutFile "C:\temp\MitigationFiles\XcelLogo.jpg"
-Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/icon.ico' -OutFile "C:\temp\MitigationFiles\icon.ico"
+invoke-webRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/XcelLogo.jpg' -OutFile "C:\temp\MitigationFiles\XcelLogo.jpg"
+Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/icon.ico' -OutFile "C:\temp\MitigationFiles\icon.ico"
 
 #Loading Windows Forms to use WinForm Objects
 Add-Type -assembly System.Windows.Forms
@@ -120,18 +120,18 @@ $Script.Add_Click(
         #Creating Folders/Installing Needed Files
         New-Item -ItemType Directory "C:\temp" -Force
         New-Item -ItemType Directory "C:\temp\MitigationLogs" -Force
-        invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.dll"
-        invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.resources.dll"
-        invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectoryPowerShellResources.dll' -OutFile "C:\temp\MitigationFiles\ActiveDirectoryPowerShellResources.dll"
-        invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.psd1' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.psd1"
-        invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Types.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Types.ps1xml"
-        invoke-webRequest -Uri 'https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/ActiveDirectory.Format.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Format.ps1xml"
+        invoke-webRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/Microsoft.ActiveDirectory.Management%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.dll"
+        invoke-webRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/Microsoft.ActiveDirectory.Management.resources%201.dll' -OutFile "C:\temp\MitigationFiles\Microsoft.ActiveDirectory.Management.resources.dll"
+        invoke-webRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/ActiveDirectoryPowerShellResources.dll' -OutFile "C:\temp\MitigationFiles\ActiveDirectoryPowerShellResources.dll"
+        invoke-webRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/ActiveDirectory.psd1' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.psd1"
+        invoke-webRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/ActiveDirectory.Types.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Types.ps1xml"
+        invoke-webRequest -Uri 'https://raw.githubusercontent.com/Techsimp68/Mitigation/main/ActiveDirectory.Format.ps1xml' -OutFile "C:\temp\MitigationFiles\ActiveDirectory.Format.ps1xml"
         $progressBar.Value = 5
         $Status.Text = "Retrieving User Data . . ."
 
         #Installing/Importing AD Module (Note: Import-Module will throw error if script is ran a 2nd time, safe to ignore)
         Start-Transcript -Path "C:\temp\MitigationLogs\TransferTranscript.txt"
-        $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/raggingsoldier/Mitigation/main/annoyingFunction.ps1"
+        $FunctionFromGitHub = Invoke-WebRequest -uri "https://raw.githubusercontent.com/Techsimp68/Mitigation/main/annoyingFunction.ps1"
         Invoke-Expression $($FunctionFromGitHub.Content)
         Import-Module -Name "C:\temp\MitigationFiles\ActiveDirectory.psd1"
 
