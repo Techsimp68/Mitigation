@@ -1,0 +1,25 @@
+function Start-RoboCopy {
+    $sourcePath = "C:\Source"
+    $destinationPath = "C:\Destination"
+
+    # Your RoboCopy command here
+    $robocopyCommand = "robocopy $sourcePath $destinationPath /MIR"
+
+    $process = Start-Process -FilePath "robocopy.exe" -ArgumentList "$sourcePath $destinationPath /MIR" -PassThru -WindowStyle Hidden -RedirectStandardOutput $null -RedirectStandardError $null
+
+    # Update progress while RoboCopy is running
+    while (!$process.HasExited) {
+        $progress = $process.StandardOutput.ReadLine()
+
+        if ($progress -match '(\d+)%') {
+            $percentComplete = [int]$Matches[1]
+            $progressBar.Value = $percentComplete
+            $label.Text = "Progress: $percentComplete%"
+            $form.Refresh()
+        }
+
+        Start-Sleep -Milliseconds 100
+    }
+
+    # Close form when RoboCopy is done
+    $form.Close()
