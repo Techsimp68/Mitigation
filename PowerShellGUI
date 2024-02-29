@@ -3,6 +3,8 @@
 Script will be used to transfer users data stored in their on-premise network drive to the 3rd party OneDrive Cloud Storage.
 Script will be used during Q1 - Q3 of the 2024 year #>
 
+
+
 #Hide Console
 Add-Type -Name Window -Namespace Console -MemberDefinition '
 [DllImport("Kernel32.dll")]
@@ -59,6 +61,7 @@ $main_form.MaximizeBox = $false
 $Label = New-Object System.Windows.Forms.Label
 $Label.Text = "                             The following application will transfer 
                     folders/files from your H Drive to your OneDrive.
+                    Please close all applications before continuing.
              The process will alert you when completed, please allow it 
                                to complete before resuming work.
 
@@ -182,7 +185,7 @@ $Script.Add_Click(
         ShowConsole
         # Copy Data Over , 
         Try {
-            RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /fp /XD "OneNote NoteBooks" /XD $filesToSkip /XF $filesToSkip /XF "desktop.ini" /Mir /v /NDL /NJH /NJS /tee /log:"C:/temp/MitigationLogs/RoboCopyLog.txt" | %{$data = $_.Split([char]9); if("$($data[4])" -ne "") { $file = "$($data[4])"} ;Write-Progress "Percentage $($data[0])" -Activity "Robocopy" -CurrentOperation "$($file)"  -ErrorAction SilentlyContinue; }
+            RoboCopy $homeDirectory "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername" /fp /XD "OneNote NoteBooks" /XD $filesToSkip /XF $filesToSkip /XF "desktop.ini" /Mir /v /NDL /NJH /tee /log:"C:/temp/MitigationLogs/RoboCopyLog.txt" | %{$data = $_.Split([char]9); if("$($data[4])" -ne "") { $file = "$($data[4])"} ;Write-Progress "Percentage $($data[0])" -Activity "Robocopy" -CurrentOperation "$($file)"  -ErrorAction SilentlyContinue; }
             $progressBar.Value = 85
             $Status.Text = "Checking Hash . . ."
         } Catch {
@@ -218,6 +221,7 @@ $Script.Add_Click(
                 Stop-Transcript
                 $progressBar.Value = 100
                 $Status.Text = "Completed!"
+                $error[0]
  
             } else {
                 Write-Host("Failed the hashes dont match need human interaction!")
@@ -225,9 +229,11 @@ $Script.Add_Click(
                 Stop-Transcript
                 $progressBar.Value = 100
                 $Status.Text = "Completed!"
+                $error[0]
             }
                     
           }
+
           #Creating Text document to let user know which have moved
           echo "These files have been moved to your OneDrive:" > "C:\temp\MitigationLogs\TransferedFiles.txt"
           "$oneFiles folders/files out of $hFiles folders/files have been moved." | Out-File "C:\temp\MitigationLogs\TransferedFiles.txt" -Append
@@ -246,7 +252,17 @@ C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env:computername
  
 A following text document will open showcasing which files have been moved.", "Move Complete", "OK", "Information")
             start 'C:\WINDOWS\system32\notepad.exe' 'C:\temp\MitigationLogs\TransferedFiles.txt'
+
+            #Flag Creation
             New-Item -Path "C:\temp\MitigationLogs\Flag.txt"
+
+            #Input Data in H & Data in OneDrive Folder
+            $colItemsH = (Get-ChildItem $homeDirectory -recurse -force | Measure-Object -property length -sum)
+            "{0:N2}" -f ($colItemsH.sum / 1MB) + " MB" | Out-File "C:\temp\MitigationLogs\HDriveMB.txt"
+
+            $colItemsO = (Get-ChildItem "C:\Users\$user\OneDrive - Xcel Energy Services Inc\H Drive.$env.computername" -recurse -force | Measure-Object -property length -sum)
+            "{0:N2}" -f ($colItemsO.sum / 1MB) + " MB"| Out-File "C:\temp\MitigationLogs\OneDriveMB.txt"
+
           }else{
             [Void] [System.Windows.MessageBox]::Show("Transfer has been completed;however, the following files/folders have not been moved due to their long file path: 
 
